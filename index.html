@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        body{
+            margin: 0;
+        }
+
+        video, input {
+            display: block;
+            max-width: 1600px;
+        }
+
+        input {
+            width: 90%;
+        }
+
+        .info {
+            background-color: aqua;
+        }
+
+        .error {
+            background-color: red;
+            color: white;
+        }
+
+        .cap-canvas {
+            border: 1px solid black;
+        }
+
+        .playbackcapture {
+            position: absolute;
+            top:100px;
+            left:100px;
+            z-index: 999;
+            border: 3px solid black;
+            visibility: hidden;
+        }
+    </style>
+
+</head>
+<body>
+    <h1>HTML5 local video file player example</h1>
+    <div id="message"></div>
+    <input type="file" accept="video/*" />
+    <video controls id="videoele"></video>
+    <button id="capture" disabled >キャプチャ</button>
+
+    <span>
+        <canvas id="draw1" class="cap-canvas">Your browser does not support HTML5 Canvas.</canvas>
+        <canvas id="draw2" class="cap-canvas"></canvas>
+        <canvas id="draw3" class="cap-canvas"></canvas>
+    </span>
+
+    <canvas id="playbackcapture" class="playbackcapture"></canvas>
+
+    <script>
+        const previewData = {};
+        const playbackcapture = document.getElementById('playbackcapture');
+
+        (function localFileVideoPlayer() {
+          'use strict'
+          var URL = window.URL || window.webkitURL
+          var displayMessage = function(message, isError) {
+            var element = document.querySelector('#message')
+            element.innerHTML = message
+            element.className = isError ? 'error' : 'info'
+          }
+          var playSelectedFile = function(event) {
+            var file = this.files[0]
+            var type = file.type
+            var videoNode = document.querySelector('video')
+            var canPlay = videoNode.canPlayType(type)
+            if (canPlay === '') canPlay = 'no'
+            var message = 'Can play type "' + type + '": ' + canPlay
+            var isError = canPlay === 'no'
+            displayMessage(message, isError)
+        
+            if (isError) {
+              return
+            }
+        
+            var fileURL = URL.createObjectURL(file)
+            videoNode.src = fileURL
+          }
+          var inputNode = document.querySelector('input')
+          inputNode.addEventListener('change', playSelectedFile, false)
+        })()
+
+        const captureButton = document.getElementById('capture');
+        const canvas1 = document.getElementById('draw1');
+        const canvas2 = document.getElementById('draw2');
+        const canvas3 = document.getElementById('draw3');
+
+        const video = document.getElementById('videoele');
+
+        let canvas1active = false;
+        let canvas2active = false;
+        let canvas3active = false;
+        let videoReady = false;
+
+        setInterval(function(){
+            if (!videoReady) return;
+
+            if (video.paused) return;
+
+            if (canvas2active) {
+                canvas3.height = canvas2.height;
+                canvas3.width = canvas2.width;
+                canvas3.getContext('2d').drawImage(canvas2, 0, 0, canvas2.width, canvas2.height);
+                canvas3active = true;
+            }
+
+            if (canvas1active) {
+                canvas2.height = canvas1.height;
+                canvas2.width = canvas1.width;
+                canvas2.getContext('2d').drawImage(canvas1, 0, 0, canvas1.width, canvas1.height);
+                canvas2active = true;
+            }
+
+            let canvasSizeX = 300; //canvasの幅
+            let canvasSizeY = (canvasSizeX*video.videoHeight)/video.videoWidth; //canvasの高さ
+            
+            canvas1.width = canvasSizeX;
+            canvas1.height = canvasSizeY;
+            canvas1.getContext('2d').drawImage(video, 0, 0, canvasSizeX, canvasSizeY); //videoタグの「今」の状態をcanvasに描写
+            canvas1active = true;
+        }, 500);
+
+        const showPlayback = (source, video) => {
+            let cw = document.documentElement.clientWidth * 0.95;
+            let ch = (cw*video.videoHeight)/video.videoWidth;
+
+            let pad = Math.floor((document.documentElement.clientWidth - cw) / 2) ;
+
+            playbackcapture.width = cw
+            playbackcapture.height = ch;
+            playbackcapture.style.left = pad + "px";
+            playbackcapture.style.top = pad + "px";
+            playbackcapture.style.position = "absolute";          
+            playbackcapture.style.visibility = "visible";
+            playbackcapture.getContext('2d').drawImage(
+                source, 0, 0, cw, ch
+            );
+        }
+
+        video.onloadedmetadata = function(){ //動画が読み込まれてから処理を開始
+            video.volume = 0.3;
+            captureButton.disabled = false;
+            videoReady = true;
+
+            //capture
+            capture.addEventListener('click',function(){
+                if(canvas3active) {
+                    showPlayback(canvas3, video);
+                }
+                else showPlayback(video, video);
+            });
+        }
+
+    </script>    
+</body>
+</html>
