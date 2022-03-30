@@ -228,7 +228,8 @@
             playbackcapture.width = cw
             playbackcapture.height = ch;
             playbackcapture.style.left = pad + "px";
-            playbackcapture.style.top = pad + "px";
+            // playbackcapture.style.top = pad + "px";
+            playbackcapture.style.top = video.offsetTop + "px";
             playbackcapture.style.position = "absolute";          
             playbackcapture.style.visibility = "visible";
             playbackcapture.getContext('2d').drawImage(
@@ -257,6 +258,7 @@
 
             [canvas1, canvas2, canvas3].forEach(x => {
                 x.addEventListener('click', () => {
+                    video.pause();
                     video.focus();
                     displayPlayback(playbacks, x, video);
                 });
@@ -265,6 +267,7 @@
             playbackcapture.addEventListener('click', function() {
                 playbackcapture.style.visibility = 'hidden';
                 video.focus();
+                video.play();
             })
         }
 
