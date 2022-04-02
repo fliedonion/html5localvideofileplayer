@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/playcontrol.css">
 
 </head>
 <body>
@@ -13,8 +14,8 @@
     <span id="videotitle"></span>
     <div id="message"></div>
 
-    <div>
-        <div id="controlButtons">
+    <div id="controlButtons">
+        <div id="playStopButtons">
             <div class="circle-button-border play-button">
                 <button id="play" class="circle-button play-button">▲</button>
             </div>
@@ -22,26 +23,21 @@
                 <button id="pause" class="circle-button stop-button">■</button>
             </div>
         </div>
-    </div>        
+
+        
+
+        <span id="backwardContainer" class="seek-button-container">
+        </span>
+        <span id="timetext"></span>
+        <span id="forwardContainer" class="seek-button-container">
+        </span>
+    </div>
     
     <video controls id="videoele"></video>
 
     <input id="fileinput" type="file" accept="video/*" />
 
-    <div>
-        <span>
-            <button id="back15s">-15s</button>
-            <button id="back5s">-5s</button>
-            <span id="timetext"></span>
-            <button id="forw5s">+5s</button>
-            <button id="forw15s">+15s</button>
-        </span>
-    </div>
-
-    <span>
-        <canvas id="draw1" class="cap-canvas">Your browser does not support HTML5 Canvas.</canvas>
-        <canvas id="draw2" class="cap-canvas"></canvas>
-        <canvas id="draw3" class="cap-canvas"></canvas>
+    <span id="smallPreviewContainer">
     </span>
     <div>
         <button id="capture" disabled >キャプチャ example</button>
@@ -50,7 +46,7 @@
     <canvas id="playbackcapture" class="playbackcapture"></canvas>
 
 
-    <script src="js/index.js"></script>
+    <script type="module" src="js/index.js"></script>
 
 
 </body>

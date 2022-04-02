@@ -1,0 +1,118 @@
+
+#controlButtons {
+    display: flex;
+    flex-direction: row;
+}
+
+#playStopButtons {
+    display: flex;
+    flex-direction: row;
+}
+#playStopButtons::after {
+    display: inline-block;
+    content: '';
+    width: 20px;
+}
+
+
+.circle-button-border {
+    width: 50px;
+    height: 50px;
+    border: 6px solid black;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+    transform: rotate(90deg);
+}
+
+.circle-button-border > .circle-button {
+    font-family: monospace;
+    margin: auto;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 30px;
+    border: none;
+    background: none;
+    text-align: center;
+    top: 50%;
+}
+
+.play-button {
+    color: green;
+    border-color: green;
+}
+
+.play-button:hover {
+    color: green;
+    border-color: lightseagreen;
+}
+
+.play-button:active {
+    color: lightseagreen;
+    border-color: lightseagreen;
+}
+
+.stop-button {
+    color: red;
+    border-color: red;
+}
+
+.stop-button:hover {
+    color: red;
+    border-color: salmon;
+}
+.stop-button:active {
+    color: salmon;
+    border-color: salmon;
+}
+
+
+
+.seek-button-container {
+    display: flex;
+    flex-direction: row;
+}
+.seek-button-container > .seek-button-border {
+    display: block;
+    margin: auto;
+    padding: 0;
+    width: 50px;
+    height: 50px;
+    
+    /* transparent border, to make same size with play button and stop button. */
+    border: 6px solid transparent;
+    border-radius: 50%;
+}
+.seek-button-container > .seek-button-border > button {
+    width: 50px;
+    height: 50px;
+
+	background-color: rgb(220, 220, 220);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 
+        inset -2px -2px 4px 0px #515151,
+        inset 4px 4px 5px 0px #F4F4F4,
+        0 0 transparent;
+}
+.seek-button-container > .seek-button-border > button:hover {
+    background-color: rgb(240, 240, 240);
+}
+.seek-button-container > .seek-button-border > button:active {
+	background-color: rgb(240, 240, 240);
+    border: 2px solid rgb(200, 200, 200);
+    box-shadow: 
+    inset 2px 2px 2px 0px #F4F4F4,
+    inset -2px -2px 2px 0px #515151,
+    0 0 transparent;
+}
+
+.playbackcapture {
+    position: absolute;
+    top:100px;
+    left:100px;
+    z-index: 999;
+    border: 3px solid red;
+    visibility: hidden;
+}

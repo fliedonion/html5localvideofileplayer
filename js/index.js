@@ -1,5 +1,8 @@
 'use strict'
 
+import { createSeekButtons } from './seekButton.js'
+import { createCaptureCanvases, createCanvasElement } from './pastFramePlaybacks.js'
+
 // global variable
 let videoReady = false;
 const getVideoReady = () => videoReady;
@@ -50,74 +53,30 @@ const localFileVideoPlayer = () => {
   inputNode.addEventListener('change', playSelectedFile, false)
 }
 
-const setVideoSeek = (video, itemsecs) => {
-  // const itemsecs = [-15,-5,5,15]
-  const videoseek = (secs) => {
-    if (video.fastSeek) {
-      video.fastSeek(video.currentTime + secs)
-    } else {
-      video.currentTime = video.currentTime + secs
-    }            
-  }
-  
-  itemsecs.forEach((sec) => {
-    if (sec == 0) return;
-    if (sec.isNaN) return;
 
-    let idprefix = sec < 0 ? "back" : "forw"
-    let elementId = `${idprefix}${sec < 0 ? -sec : sec}s`
-    const ele = document.querySelector(`#${elementId}`)
-    if (ele) {
-      ele.addEventListener('click', () => videoseek(sec));
-    } else {
-      console.log(`element ${elementId} is not found`)
-    }
-  })
-}
 
 
 
 const video = document.getElementById('videoele');
 
 
-// set events for seek offset button
-setVideoSeek(video, [-15,-5,5,15]);
+// create buttons for seek video and set events to the buttons.
+const backwardContainer = document.querySelector('#backwardContainer')
+const forwardContainer = document.querySelector('#forwardContainer')
+createSeekButtons(document, backwardContainer, video, [-15,-5])
+createSeekButtons(document, forwardContainer, video, [5,15])
 
-
-
+// example capture button
 const captureButton = document.querySelector('#capture');
-const canvas1 = document.getElementById('draw1');
-const canvas2 = document.getElementById('draw2');
-const canvas3 = document.getElementById('draw3');
-const canvasPlayback1 = document.createElement('canvas');
-const canvasPlayback2 = document.createElement('canvas');
-const canvasPlayback3 = document.createElement('canvas');
 
+// create elements for auto playback capture.
+const playbacks = createCaptureCanvases(document, document.querySelector('#smallPreviewContainer'), 5);
+playbacks[0].isFirst = true;
+
+const smallCaptureCanvases = playbacks.map(x=>x.small);
+
+// time indicator
 const timetext = document.getElementById('timetext');
-
-const playbacks = [];
-playbacks.push({
-  small: canvas1,
-  isFirst: true,
-  big: canvasPlayback1,
-  isActive: false,
-  videoname: ''
-});
-playbacks.push({
-  small: canvas2,
-  isFirst: false,
-  big: canvasPlayback2,
-  isActive: false,
-  videoname: ''
-});
-playbacks.push({
-  small: canvas3,
-  isFirst: false,
-  big: canvasPlayback3,
-  isActive: false,
-  videoname: ''
-});
-
 
 
 
@@ -127,8 +86,10 @@ const copyCanvasDraw = (canSrc, canDest) => {
   canDest.getContext('2d').drawImage(canSrc, 0, 0);
 }
 
+const smallCanvasWidthPx = 200;
+
 const copyImageFromVideo = (video, destPlayback) => {
-  let smallCanvasW = 300; //canvasの幅
+  let smallCanvasW = smallCanvasWidthPx; //canvasの幅
   let smallCanvasH = (smallCanvasW*video.videoHeight)/video.videoWidth; //canvasの高さ
 
   destPlayback.small.width = smallCanvasW;
@@ -141,8 +102,6 @@ const copyImageFromVideo = (video, destPlayback) => {
 
   destPlayback.isActive = true;
 }
-
-
 
 
 const intervalCallback = () => {
@@ -159,14 +118,13 @@ const intervalCallback = () => {
       timetext.innerText = new Date(curtime * 1000).toISOString().substring(14, 14 + 5);
     }
   }
-    
 
-  for(let i = 1; i < playbacks.length; i++){
+  for(let i = playbacks.length - 1; i > 0; i--) {
     if (playbacks[i-1].isActive) {
-      const {small:s1, big:s2} = playbacks[i-1];
-      const {small:d1, big:d2} = playbacks[i];
-      copyCanvasDraw(s1, d1);
-      copyCanvasDraw(s2, d2);
+      const {small:srcSmall, big:srcBig} = playbacks[i-1];
+      const {small:destSmall, big:destBig} = playbacks[i];
+      copyCanvasDraw(srcSmall, destSmall);
+      copyCanvasDraw(srcBig, destBig);
       playbacks[i].isActive = true;
     }
   }
@@ -242,7 +200,7 @@ video.onloadedmetadata = () => { //動画が読み込まれてから処理を開
     }
   };
 
-  [canvas1, canvas2, canvas3].forEach(x => {
+  smallCaptureCanvases.forEach(x => {
     x.addEventListener('click', () => {
       video.pause();
       // video.focus();
