@@ -11,7 +11,11 @@
 </head>
 <body>
     <h1>HTML5 local video file player example</h1>
-    <span id="videotitle"></span>
+    <span>
+        <input id="fileinput" style="visibility: hidden;" type="file" accept="video/*" />
+        <button id="fileAltButton">Browse...</button>
+        <span id="videotitle"></span>
+    </span>
     <div id="message"></div>
 
     <div id="controlButtons">
@@ -33,12 +37,17 @@
         </span>
     </div>
     
-    <video controls id="videoele"></video>
+    <div id="videoContainer">
+        <div id="sidebar">
+            <button id="toggleSidebar">&lt;&lt;</button>
+            <div id="smallPreviewHiddenCover" data-covered="false"> </div>
+            <div id="smallPreviewContainer">
+            </div>
+        </div>
+        <video controls id="videoele"></video>
+    </div>
 
-    <input id="fileinput" type="file" accept="video/*" />
 
-    <span id="smallPreviewContainer">
-    </span>
     <div>
         <button id="capture" disabled >キャプチャ example</button>
     </div>

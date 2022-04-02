@@ -36,7 +36,7 @@ const localFileVideoPlayer = () => {
     const videoNode = document.querySelector('#videoele')
     let canPlay = videoNode.canPlayType(type)
     if (canPlay === '') canPlay = 'no'
-    let message = 'Can play type "' + type + '": ' + canPlay
+    let message = `'${type}' will probably ${canPlay==='no'?'NOT':''} play.`
     const isError = canPlay === 'no'
     displayMessage(message, isError)
 
@@ -53,6 +53,11 @@ const localFileVideoPlayer = () => {
   inputNode.addEventListener('change', playSelectedFile, false)
 }
 
+const fileBrowseButton = document.querySelector('#fileAltButton')
+fileBrowseButton.addEventListener('click', () => {
+  const fileNode = document.querySelector('#fileinput')
+  fileNode.click();
+})
 
 
 
@@ -153,6 +158,29 @@ const showPlayback = (source, video) => {
   );
 }
 
+const sidebarToggleButton = document.querySelector('#toggleSidebar')
+sidebarToggleButton.addEventListener('click', () => {
+  const sidebar = document.querySelector('#sidebar')
+  const previews = document.querySelector('#smallPreviewContainer')
+  const cover = document.querySelector('#smallPreviewHiddenCover')
+
+  if (cover.dataset.covered === "false") {
+    sidebarToggleButton.textContent = '>>'
+    sidebar.style.width = '40px'
+    previews.style.display='none'
+    cover.dataset.covered = "true"
+    cover.style.display = 'block'
+  }
+  else {
+    sidebarToggleButton.textContent = '<<'
+    sidebar.style.width = '200px'
+    previews.style.display='flex'
+    cover.dataset.covered = "false"
+    cover.style.display = 'none'
+  }
+
+
+})
 
 
 
