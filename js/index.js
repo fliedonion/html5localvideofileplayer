@@ -1,7 +1,14 @@
 'use strict'
 
 import { createSeekButtons } from './seekButton.js'
-import { createCaptureCanvases, createCanvasElement } from './pastFramePlaybacks.js'
+import { createCaptureCanvases } from './pastFramePlaybacks.js'
+
+import {isIndexedDBSupport} from './bookmark.js'
+
+isIndexedDBSupport();
+
+
+
 
 // global variable
 let videoReady = false;
@@ -160,6 +167,7 @@ const showPlayback = (source, video) => {
 
 const sidebarToggleButton = document.querySelector('#toggleSidebar')
 sidebarToggleButton.addEventListener('click', () => {
+
   const sidebar = document.querySelector('#sidebar')
   const previews = document.querySelector('#smallPreviewContainer')
   const cover = document.querySelector('#smallPreviewHiddenCover')
