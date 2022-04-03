@@ -1,0 +1,25 @@
+#bookmarkContainer {
+    max-width: 1200px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#bookmarkContainer > .comment-input-area {
+    display:flex;
+    flex-direction: column;
+    align-items:flex-end;
+}
+#updateComment {
+
+}
+
+#bookmarkContainer > .comment-list-area  {
+    display:flex;
+    flex-direction: column;
+    align-items:flex-start;
+}
+
+#commentList {
+    min-width:480px
+}

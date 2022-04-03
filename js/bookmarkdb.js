@@ -10,10 +10,6 @@ const isIndexedDBSupport = () => {
 
 let db;
 
-// undefined : not initialized
-// resolve even if db can't open.
-let dbOpenPromise;
-
 const dbName = "video-bookmarks";
 const storeName = "notes"
 const storeKeyPathTitleWithTime = ["title", "time"]
@@ -43,53 +39,56 @@ const timeoutAsync = (timeout, key) => {
 }
 
 
+const dbUpgradeNeeded = (event) => {
+  const upgDb = this.result; 
 
-if (isIndexedDBSupport()){
-
-  // Let us open our database
-  const DBOpenRequest = window.indexedDB.open(dbName, 1);
-
-  // these event handlers act on the database being opened.
-  DBOpenRequest.onerror = function(event) {
+  upgDb.onerror = function(event) {
     console.error('<li>Error loading database.</li>');
-    console.error(event);
   };
 
-  DBOpenRequest.onsuccess = function(event) {
-    console.log('<li>Database initialized.</li>');
-    db = DBOpenRequest.result;
-  };
+  let objectStore = undefined;
+  if (!upgDb.objectStoreNames.contains(storeName)) {
+    // Create an objectStore for this database
+    objectStore = upgDb.createObjectStore(storeName, { keyPath: storeKeyPathTitleWithTime });
+    // define what data items the objectStore will contain
+    objectStore.createIndex("title", storeKeyPathTitle, { unique: false });
+    objectStore.createIndex(uniqueIndexName, storeKeyPathTitleWithTime, { unique: true });
+  } else {
+    // https://stackoverflow.com/a/36025624/2513010
+    const tx = event.target.transaction;
+    console.log(tx.objectStore(storeName))
+    objectStore = tx.objectStore(storeName)
+  }
+  if (event.oldVersion < 2) {
+    // https://stackoverflow.com/a/44007456/2513010
+    // Do Update
+  }
+}
 
-  // This event handles the event whereby a new version of
-  // the database needs to be created Either one has not
-  // been created before, or a new version number has been
-  // submitted via the window.indexedDB.open line above
-  // it is only implemented in recent browsers
-  DBOpenRequest.onupgradeneeded = function(event) {
-    const upgDb = this.result; 
+const openDbAsync = async (dbName, version) => {
+  return new Promise((res, rej) => {
+    const DBOpenRequest = window.indexedDB.open(dbName, version);
 
-    upgDb.onerror = function(event) {
-      console.error('<li>Error loading database.</li>');
+    DBOpenRequest.onerror = function(event) {
+      // console.error('Error loading database.');
+      // console.error(event);
+      db = null;
+      rej(event)
     };
 
-    let objectStore = undefined;
-    if (!upgDb.objectStoreNames.contains(storeName)) {
-      // Create an objectStore for this database
-      objectStore = upgDb.createObjectStore(storeName, { keyPath: storeKeyPathTitleWithTime });
-      // define what data items the objectStore will contain
-      objectStore.createIndex("title", storeKeyPathTitle, { unique: false });
-      objectStore.createIndex(uniqueIndexName, storeKeyPathTitleWithTime, { unique: true });
-    } else {
-      // https://stackoverflow.com/a/36025624/2513010
-      const tx = event.target.transaction;
-      console.log(tx.objectStore(storeName))
-      objectStore = tx.objectStore(storeName)
-    }
-    if (event.oldVersion < 2) {
-      // https://stackoverflow.com/a/44007456/2513010
-      // Do Update
-    }
-  };
+    DBOpenRequest.onsuccess = function(event) {
+      console.log('Database initialized.');
+      db = DBOpenRequest.result;
+      res(db)
+    };
+
+    DBOpenRequest.onupgradeneeded = dbUpgradeNeeded;
+  })
+}
+
+
+if (isIndexedDBSupport()){
+  await openDbAsync(dbName, 1)
 }
 
 
@@ -146,7 +145,8 @@ const _findOneToCheckExists = (idbINdex, keyPathValueArray) => {
   })
 }
 
-const addItemPromise = (db, item, indexName) => {
+// upsert
+const saveItemPromise = (db, item, indexName) => {
   return new Promise((res, rej)=> {
     const tx = db.transaction(storeName, 'readwrite')
     const store = tx.objectStore(storeName)
@@ -166,6 +166,14 @@ const addItemPromise = (db, item, indexName) => {
       objectStoreRequest.onerror = onerror
     }
 
+    const putItem = (updateItem) => {
+      // store item to objectStore.
+      const objectStoreRequest = store.put(updateItem);
+      objectStoreRequest.onsuccess = onsuccess
+      objectStoreRequest.onerror = onerror
+    }
+
+
     // Read first to avoid Already Exists error.
     const indexKeyPath = index.keyPath;
     const keyPathValueArray = extractKeyPathValueArray(indexKeyPath, item)
@@ -174,7 +182,8 @@ const addItemPromise = (db, item, indexName) => {
     _findOneToCheckExists(index, keyPathValueArray)
       .then(v => {
         if (v.found){
-          console.log(v.value)
+          // putはなければ追加されるので、常にputでも良いのかもしれない。
+          putItem(item)
         } else {
           addItem();
         }
@@ -186,11 +195,90 @@ const addItemPromise = (db, item, indexName) => {
 }
 
 
+const saveBookmarkItemAsync = (title, time, note, updateDate) => {
+  const item = { title, time, note, updateDate };
+  return saveItemPromise(db, item, uniqueIndexName)
+}
+
+const getAllAsync = (title) => {
+  return new Promise((res, rej) => {
+    const result = [];
+    const tx = db.transaction(storeName)
+    const store = tx.objectStore(storeName)
+    const index = store.index(uniqueIndexName)
+      
+    const openCursor = index.openCursor(IDBKeyRange.bound([title, 0], [title, Number.MAX_VALUE]))
+    openCursor.onsuccess = event => {
+      const cursor = event.target.result;
+      if (!cursor) {
+        res(result)
+        return;
+      }
+  
+      //console.log(cursor.key, cursor.value)
+      result.push(cursor.value)
+      cursor.continue();
+    }
+
+    openCursor.onerror = event => rej(event)
+  })
+}
+
+
+const isFloat = (n) => {
+  return !Number.isNaN(n) && (n % 1 !== 0)
+}
+
+
+// maintenance test data. 
+const removeFloatTimeItemsAsync = (title) => {
+ 
+  return new Promise((res, rej) => {
+    const removed = []
+    const tx = db.transaction(storeName, 'readwrite')
+    const store = tx.objectStore(storeName)
+    const index = store.index(uniqueIndexName)
+    const indexKeyPath = index.keyPath;
+
+    const openCursor = index.openCursor(IDBKeyRange.bound([title, 0], [title, Number.MAX_VALUE]))
+    openCursor.onsuccess = event => {
+      const cursor = event.target.result;
+      if (!cursor) {
+        res(removed)
+        return;
+      }
+  
+      const item = cursor.value
+      if (isFloat(item.time)) {
+        const keyPathValueArray = extractKeyPathValueArray(indexKeyPath, item)
+
+        const objectStoreRequest = store.delete(keyPathValueArray);
+        objectStoreRequest.onsuccess = e => {
+          removed.push(keyPathValueArray)
+          cursor.continue();
+        }
+        objectStoreRequest.onerror = e => {
+          console.error(e)
+          cursor.continue();
+        }
+      } else{
+
+        cursor.continue();
+      }
+    }
+
+    openCursor.onerror = event => rej(event)
+  })
+}
+
+
+
+
 
 // example to use Promise Version
 const testDbAddItem2 = async () => {
   const TESTKEY = ["test-promise", 101];
-  const newItem = {title: TESTKEY[0], time: TESTKEY[1], note: "This is a promise test"};
+  const newItem = {title: TESTKEY[0], time: TESTKEY[1], note: "This is a promise test", updateDate: Date.now()};
 
   try{
     await addItemPromise(db, newItem, uniqueIndexName)
@@ -202,7 +290,7 @@ const testDbAddItem2 = async () => {
 // example or referrence
 const TESTKEY = ["test", 101]
 const testDbAddItem = () => {
-  const newItem = {title: TESTKEY[0], time: TESTKEY[1], note: "This is a test"};
+  const newItem = {title: TESTKEY[0], time: TESTKEY[1], note: "This is a test", updateDate: Date.now()};
 
 
   const tx = db.transaction(storeName, 'readwrite')
@@ -277,4 +365,14 @@ const testDbReadItems = () => {
   }  
 }
 
-export {isIndexedDBSupport, testDbAddItem, testDbReadItems, testDbAddItem2, timeoutAsync}
+// export {isIndexedDBSupport, testDbAddItem, testDbReadItems, testDbAddItem2, timeoutAsync}
+export default {
+  isIndexedDBSupport, 
+  saveBookmarkItemAsync,
+  getAllAsync,
+  removeFloatTimeItemsAsync,
+  testDbAddItem, 
+  testDbReadItems, 
+  testDbAddItem2, 
+  timeoutAsync
+}

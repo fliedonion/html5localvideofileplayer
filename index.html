@@ -7,6 +7,7 @@
     <title>Video Player</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/playcontrol.css">
+    <link rel="stylesheet" href="css/commentcontrol.css">
 
 </head>
 <body>
@@ -28,8 +29,6 @@
             </div>
         </div>
 
-        
-
         <span id="backwardContainer" class="seek-button-container">
         </span>
         <span id="timetext"></span>
@@ -47,6 +46,16 @@
         <video controls id="videoele"></video>
     </div>
 
+    <div id="bookmarkContainer">
+        <div class="comment-input-area">
+            <textarea name="comment" id="commentText" cols="60" rows="10"></textarea>
+            <button id="updateComment">Save</button>
+        </div>
+        <div class="comment-list-area">
+            <button id="commentRefresh">Refresh</button>
+            <select id="commentList" size="10"></select>
+        </div>
+    </div>
 
     <div>
         <button id="capture" disabled >キャプチャ example</button>
@@ -54,9 +63,7 @@
 
     <canvas id="playbackcapture" class="playbackcapture"></canvas>
 
-
     <script type="module" src="js/index.js"></script>
-
-
+    <script type="module" src="js/bookmarkControl.js"></script>
 </body>
 </html>
