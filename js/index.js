@@ -3,11 +3,8 @@
 import { createSeekButtons } from './seekButton.js'
 import { createCaptureCanvases } from './pastFramePlaybacks.js'
 
-import {isIndexedDBSupport} from './bookmark.js'
-
-isIndexedDBSupport();
-
-
+import {isIndexedDBSupport,testDbAddItem, testDbReadItems, testDbAddItem2, timeoutAsync} from './bookmarkdb.js'
+console.log("is indexedDB supported : ", isIndexedDBSupport())
 
 
 // global variable
@@ -27,7 +24,18 @@ const setVideoNameToTitle = (name) => {
   document.querySelector('#videotitle').textContent = name
 }
 
-const localFileVideoPlayer = () => {
+const localFileVideoPlayer = async () => {
+  await timeoutAsync(100) // dummy wait until open database.
+
+  console.log("test: all-items before add")
+  testDbReadItems();
+
+  testDbAddItem();
+  testDbAddItem2();
+
+  console.log("test: all-items after add")
+  testDbReadItems();
+
 
   const URL = window.URL || window.webkitURL
   const displayMessage = (message, isError) => {
