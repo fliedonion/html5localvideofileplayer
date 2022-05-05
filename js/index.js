@@ -3,6 +3,8 @@
 import { createSeekButtons } from './seekButton.js'
 import { createCaptureCanvases } from './pastFramePlaybacks.js'
 
+import watchtime from './watchtimeInterface.js'
+
 // global variable
 const playbackcaptureCount = 10;
 let videoReady = false;
@@ -16,7 +18,7 @@ const playbackcapture = document.querySelector('#playbackcapture');
 
 window.onload = () => localFileVideoPlayer();
 
-
+const attrVideoFilename = "data-filename"
 const setVideoNameToTitle = (name) => {
   document.querySelector('#videotitle').textContent = name
 }
@@ -54,10 +56,21 @@ const localFileVideoPlayer = () => {
     if (isError) {
       return
     }
+
+    
+    watchtime.loadWatchtime(file.name).then(lastWatchInfo => {
+      if (lastWatchInfo) {
+        console.log(lastWatchInfo)
+        videoNode.currentTime = lastWatchInfo.currentTime;
+        
+      }
+    })
+
     setVideoNameToTitle(file.name)
 
     const fileURL = URL.createObjectURL(file)
     videoNode.src = fileURL
+    videoNode[attrVideoFilename]=file.name
     videoNode.focus();
   }
   const inputNode = document.querySelector('#fileinput')
@@ -120,7 +133,7 @@ const copyImageFromVideo = (video, destPlayback) => {
 }
 
 
-const intervalCallback = () => {
+const intervalCallback = async () => {
   if (!getVideoReady()) return;
   if (video.paused) return;
 
@@ -142,6 +155,12 @@ const intervalCallback = () => {
       copyCanvasDraw(srcSmall, destSmall);
       copyCanvasDraw(srcBig, destBig);
       playbacks[i].isActive = true;
+    }
+  }
+
+  if (!video.paused) {
+    if (video[attrVideoFilename]){
+      await watchtime.saveWatchtime(video[attrVideoFilename], curtime);
     }
   }
 

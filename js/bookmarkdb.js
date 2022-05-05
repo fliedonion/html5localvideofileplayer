@@ -145,13 +145,13 @@ const _findOneToCheckExists = (idbIndex, keyPathValueArray) => {
       if (!cursor) {
         // console.debug('may by not found')
         // Add item only if missing.
-        res({found: false, value: null })
+        res({found: false, key: null, value: null })
         return
       }
   
       // console.debug("may be found exit with nothing.", cursor.key);
       // cursor.continue(); // not continue this time.
-      res({found: true, value: {...cursor.key.value} })
+      res({found: true, key: cursor.key, value: {...cursor.value} })
       return
     }
   })
