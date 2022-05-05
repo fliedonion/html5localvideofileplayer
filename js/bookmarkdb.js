@@ -40,7 +40,7 @@ const timeoutAsync = (timeout, key) => {
 
 
 const dbUpgradeNeeded = (event) => {
-  const upgDb = this.result; 
+  const upgDb = event.target.result; 
 
   upgDb.onerror = function(event) {
     console.error('<li>Error loading database.</li>');
@@ -100,7 +100,13 @@ const onError = event => {
 }
 
 
+// util
 const extractKeyPathValueArray = (keyPath, item) => {
+  // ex: item = {"key1": "value", "key2": "val2", "key3": "val3"}
+  //     keyPath = ["key1", "key2"]
+  //   then 
+  //     return [ item["key1"], item["key2"] ]
+
   if (keyPath == "") return null;
 
   const workKeyPath = []
@@ -116,12 +122,18 @@ const extractKeyPathValueArray = (keyPath, item) => {
     // console.log(`%c nortation: ${nortation}`,  'color: blue')
     result.push(nortation.split('.').reduce((o,ind) => o[ind], item))
   })
+
+  if (!Array.isArray(keyPath)) {
+    return result[0];
+  }
   return result;
 };
 
-const _findOneToCheckExists = (idbINdex, keyPathValueArray) => {
+
+
+const _findOneToCheckExists = (idbIndex, keyPathValueArray) => {
   return new Promise((res, rej) => {
-    const openCursor = idbINdex.openCursor(keyPathValueArray)
+    const openCursor = idbIndex.openCursor(keyPathValueArray)
 
     openCursor.onerror = event => {
       rej(event)
@@ -222,6 +234,24 @@ const getAllAsync = (title) => {
     openCursor.onerror = event => rej(event)
   })
 }
+
+const getAllKeysAsync = () => {
+  return new Promise((res, rej) => {
+    const result = [];
+    const tx = db.transaction(storeName)
+    const store = tx.objectStore(storeName)
+    const index = store.index(uniqueIndexName)
+
+    const req = index.getAllKeys()
+    req.onsuccess = () => {
+      res(req.result)
+      return;
+    }
+
+    req.onerror = () => rej(req.error)
+  })
+}
+
 
 
 const isFloat = (n) => {
@@ -366,6 +396,7 @@ export default {
   isIndexedDBSupport, 
   saveBookmarkItemAsync,
   getAllAsync,
+  getAllKeysAsync,
   removeFloatTimeItemsAsync,
   testDbAddItem, 
   testDbReadItems, 

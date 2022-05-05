@@ -7,7 +7,18 @@ const video = document.querySelector('#videoele');
 const lastLoadedVideoTitle = document.querySelector('#videotitle')
 const commentTextArea = document.querySelector('#commentText')
 
+const debugAllKeysButton = document.querySelector('#debugAllKeysButton')
+
+
 if (db.isIndexedDBSupport()) {
+    if (debugAllKeysButton) {
+        debugAllKeysButton.addEventListener('click', async () => {
+            const keys = await db.getAllKeysAsync();
+            console.log(keys)
+        })
+    }
+
+
     refreshButton.addEventListener('click', async event => {
         db.removeFloatTimeItemsAsync(lastLoadedVideoTitle.textContent)
 
