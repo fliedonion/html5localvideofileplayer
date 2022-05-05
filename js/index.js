@@ -4,6 +4,7 @@ import { createSeekButtons } from './seekButton.js'
 import { createCaptureCanvases } from './pastFramePlaybacks.js'
 
 // global variable
+const playbackcaptureCount = 10;
 let videoReady = false;
 const getVideoReady = () => videoReady;
 const setVideoReady = (value) => videoReady = value;
@@ -85,7 +86,7 @@ createSeekButtons(document, forwardContainer, video, [5,15])
 const captureButton = document.querySelector('#capture');
 
 // create elements for auto playback capture.
-const playbacks = createCaptureCanvases(document, document.querySelector('#smallPreviewContainer'), 5);
+const playbacks = createCaptureCanvases(document, document.querySelector('#smallPreviewContainer'), playbackcaptureCount);
 playbacks[0].isFirst = true;
 
 const smallCaptureCanvases = playbacks.map(x=>x.small);

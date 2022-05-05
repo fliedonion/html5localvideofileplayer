@@ -1,0 +1,20 @@
+{
+  "name": "effective-learn-localplayer",
+  "version": "1.0.0",
+  "description": "A project to practice playing local video files in HTML5.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://livax2:3000/fliedonion/effective-learn-localplayer.git"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.14.0"
+  }
+}

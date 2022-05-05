@@ -1,6 +1,8 @@
 /*.zip
 /*.7z
 
+node_modules
+
 # Windows
 Thumbs.db
 Thumbs.db:encryptable
