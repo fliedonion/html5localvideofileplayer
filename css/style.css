@@ -4,8 +4,15 @@ body{
 
 video, input {
     display: block;
-    max-width: 1800px;
+
 }
+
+video {
+    max-width: 85vw;
+    max-height: 70vh;
+    padding-right: 5vw;
+}
+
 
 #videoContainer{
     margin: 0;
@@ -16,6 +23,15 @@ video, input {
     flex-direction: row;
     align-items: flex-start;
 }
+
+#videoContainer #sidebar {
+    flex-grow: 0;
+}
+#videoContainer video {
+    flex-grow: 1;
+}
+
+
 #smallPreviewHiddenCover{
     content: '';
     display: none;
@@ -33,9 +49,11 @@ video, input {
     flex-direction: column;
     margin: 0;
     padding: 0;
-    width: 200px;
-    min-width: 40px;
-    min-height: 800px;
+    width: 10vw;
+    height: 70vh;
+    min-width: 140px;
+    min-height: 40vh;
+    overflow-y: scroll;
 }
 
 input {
