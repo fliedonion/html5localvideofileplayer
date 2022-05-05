@@ -237,7 +237,6 @@ const getAllAsync = (title) => {
 
 const getAllKeysAsync = () => {
   return new Promise((res, rej) => {
-    const result = [];
     const tx = db.transaction(storeName)
     const store = tx.objectStore(storeName)
     const index = store.index(uniqueIndexName)
