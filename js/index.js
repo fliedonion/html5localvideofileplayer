@@ -251,6 +251,6 @@ video.onloadedmetadata = () => { //動画が読み込まれてから処理を開
   playbackcapture.addEventListener('click', function() {
     playbackcapture.style.visibility = 'hidden';
     video.focus();
-    //　video.play();
+    // video.play();
   })
 }

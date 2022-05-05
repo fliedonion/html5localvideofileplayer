@@ -178,7 +178,6 @@ const saveItemPromise = (db, item, indexName) => {
     const indexKeyPath = index.keyPath;
     const keyPathValueArray = extractKeyPathValueArray(indexKeyPath, item)
     
-    const openCursor = index.openCursor(keyPathValueArray)
     _findOneToCheckExists(index, keyPathValueArray)
       .then(v => {
         if (v.found){
@@ -272,16 +271,13 @@ const removeFloatTimeItemsAsync = (title) => {
 }
 
 
-
-
-
 // example to use Promise Version
 const testDbAddItem2 = async () => {
   const TESTKEY = ["test-promise", 101];
   const newItem = {title: TESTKEY[0], time: TESTKEY[1], note: "This is a promise test", updateDate: Date.now()};
 
   try{
-    await addItemPromise(db, newItem, uniqueIndexName)
+    await saveItemPromise(db, newItem, uniqueIndexName)
   } catch(err) {
     console.log(err);
   }
