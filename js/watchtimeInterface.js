@@ -10,8 +10,8 @@ import db from './watchtimedb.js'
 //     await db.saveWatchtimeItemAsync("dummy", 0, Date())
 // }
 
-const saveWatchtime = async (title, movietime, date = Date()) => {
-    await db.saveWatchtimeItemAsync(title, movietime, date)
+const saveWatchtime = async (title, currentTime, date = Date()) => {
+    await db.saveWatchtimeItemAsync(title, currentTime, date)
 }
 
 const loadWatchtime = async (title) => {

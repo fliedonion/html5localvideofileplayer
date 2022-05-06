@@ -108,11 +108,3 @@
     0 0 transparent;
 }
 
-.playbackcapture {
-    position: absolute;
-    top:100px;
-    left:100px;
-    z-index: 999;
-    border: 3px solid red;
-    visibility: hidden;
-}

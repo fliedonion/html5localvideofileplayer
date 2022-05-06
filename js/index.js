@@ -57,15 +57,6 @@ const localFileVideoPlayer = () => {
       return
     }
 
-    
-    watchtime.loadWatchtime(file.name).then(lastWatchInfo => {
-      if (lastWatchInfo) {
-        console.log(lastWatchInfo)
-        videoNode.currentTime = lastWatchInfo.currentTime;
-        
-      }
-    })
-
     setVideoNameToTitle(file.name)
 
     const fileURL = URL.createObjectURL(file)
@@ -86,7 +77,7 @@ fileBrowseButton.addEventListener('click', () => {
 
 
 
-const video = document.getElementById('videoele');
+const video = document.querySelector('#videoele');
 
 
 // create buttons for seek video and set events to the buttons.
@@ -171,17 +162,11 @@ const intervalCallback = async () => {
 setInterval(intervalCallback, 1000);
 
 const showPlayback = (source, video) => {
-  let cw = document.documentElement.clientWidth * 0.95;
-  let ch = (cw*video.videoHeight)/video.videoWidth;
+  let cw = video.offsetWidth;
+  let ch = video.offsetHeight;
 
-  let pad = Math.floor((document.documentElement.clientWidth - cw) / 2) ;
-
-  playbackcapture.width = cw
+  playbackcapture.width = cw;
   playbackcapture.height = ch;
-  playbackcapture.style.left = pad + "px";
-  // playbackcapture.style.top = pad + "px";
-  playbackcapture.style.top = video.offsetTop + "px";
-  playbackcapture.style.position = "absolute";          
   playbackcapture.style.visibility = "visible";
   playbackcapture.getContext('2d').drawImage(
     source, 0, 0, cw, ch
@@ -239,9 +224,48 @@ const setPlayPauseButtonEvent = (video) => {
 setPlayPauseButtonEvent(video);
 
 
-video.onloadedmetadata = () => { //動画が読み込まれてから処理を開始
+const initSmallCaptureClickEvent = (video, playbacks) => {
+  const displayPlayback = (playbacks, target, video) => {
+    // video.focus();
+    let q = playbacks.find(x => x.small == target);
+    if(q && q.isActive) {
+      showPlayback(q.big, video);
+    }
+  };
+  
+  smallCaptureCanvases.forEach(x => {
+    x.addEventListener('click', () => {
+      video.pause();
+      // video.focus();
+      displayPlayback(playbacks, x, video);
+    });
+  })
+}
+initSmallCaptureClickEvent(video, playbacks);
+
+
+const _debugFillDummyRectToFirstSmallCapture = (playbacks) => {
+  const firstItem = playbacks.find(x => x !== undefined);
+  if (firstItem) {
+    let context = firstItem.big.getContext('2d');
+    context.fillStyle = "rgb(0, 0, 255)";
+    context.fillRect(0,0,50,50);
+
+    context = firstItem.small.getContext('2d');
+    context.fillStyle = "rgb(0, 0, 255)";
+    context.fillRect(0,0,50,50);
+
+    firstItem.isActive = true;
+  }  
+}
+// _debugFillDummyRectToFirstSmallCapture(playbacks)
+
+
+
+video.onloadedmetadata = async () => { //動画が読み込まれてから処理を開始
   video.volume = 0.3;
   captureButton.disabled = false;
+
   setVideoReady(true);
 
   // example
@@ -251,25 +275,23 @@ video.onloadedmetadata = () => { //動画が読み込まれてから処理を開
     showPlayback(playbacks[0].big, video);
   });
 
-  const displayPlayback = (playbacks, target, video) => {
-    // video.focus();
-    let q = playbacks.find(x => x.small == target);
-    if(q && q.isActive) {
-      showPlayback(q.big, video);
-    }
-  };
-
-  smallCaptureCanvases.forEach(x => {
-    x.addEventListener('click', () => {
-      video.pause();
-      // video.focus();
-      displayPlayback(playbacks, x, video);
-    });
-  })
-
   playbackcapture.addEventListener('click', function() {
     playbackcapture.style.visibility = 'hidden';
     video.focus();
     // video.play();
   })
+
+  const videofilename = video[attrVideoFilename]
+  if (videofilename) {
+    const lastWatchInfo = await watchtime.loadWatchtime(videofilename)
+    if (lastWatchInfo) {
+      console.log(lastWatchInfo)
+      video.currentTime = lastWatchInfo.currentTime;
+    }
+  }
+}
+
+video.onemptied = () => {
+  console.debug("remove filename attribute")
+  delete video[attrVideoFilename]
 }

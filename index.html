@@ -43,7 +43,11 @@
             <div id="smallPreviewContainer">
             </div>
         </div>
-        <video controls id="videoele"></video>
+        <div id="videoParent">
+            <canvas id="playbackcapture" class="playbackcapture"></canvas>
+            <video controls id="videoele"></video>
+        </div>
+        
     </div>
 
     <div id="bookmarkContainer">
@@ -60,8 +64,6 @@
     <div>
         <button id="capture" disabled >キャプチャ example</button>
     </div>
-
-    <canvas id="playbackcapture" class="playbackcapture"></canvas>
 
     <div class="debug-controls">
         <input type="button" id="debugAllKeysButton" value="allkeys" >
